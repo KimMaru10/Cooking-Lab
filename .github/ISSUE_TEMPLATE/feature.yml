@@ -1,0 +1,87 @@
+name: 🚀 機能追加
+description: 新しい機能の追加
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: domain
+    attributes:
+      label: ドメイン
+      description: 関連するドメインを選択してください
+      options:
+        - Lesson（レッスン）
+        - Reservation（予約）
+        - Student（生徒）
+        - Ticket（チケット）
+        - Instructor（講師）
+        - 認証・共通基盤
+        - フロントエンド
+        - その他
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: どのような機能を追加したいですか？
+      placeholder: |
+        例：生徒がレッスンをお気に入り登録できる機能
+    validations:
+      required: true
+
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景・目的
+      description: なぜこの機能が必要ですか？
+      placeholder: |
+        例：興味のあるレッスンを保存しておき、後で予約しやすくするため
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 受け入れ条件
+      description: この機能が完成したと言える条件
+      placeholder: |
+        - [ ] 生徒がレッスンをお気に入りに追加できる
+        - [ ] お気に入り一覧を表示できる
+        - [ ] お気に入りを解除できる
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: タスク
+      description: 実装に必要なタスクを分解してください
+      placeholder: |
+        - [ ] ドメインモデル設計
+        - [ ] DBマイグレーション作成
+        - [ ] エンティティ・リポジトリ実装
+        - [ ] ユースケース実装
+        - [ ] API実装
+        - [ ] フロントエンド実装
+        - [ ] テスト作成
+    validations:
+      required: false
+
+  - type: textarea
+    id: domain-knowledge
+    attributes:
+      label: ドメイン知識・ルール
+      description: この機能に関連するビジネスルールがあれば記載
+      placeholder: |
+        例：お気に入りは最大50件まで
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 備考
+      description: 参考資料やその他補足情報
+    validations:
+      required: false

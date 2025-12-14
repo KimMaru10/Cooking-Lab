@@ -1,0 +1,117 @@
+name: 🐛 バグ修正
+description: バグや不具合の報告
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: domain
+    attributes:
+      label: ドメイン
+      description: 関連するドメインを選択してください
+      options:
+        - Lesson（レッスン）
+        - Reservation（予約）
+        - Student（生徒）
+        - Ticket（チケット）
+        - Instructor（講師）
+        - 認証・共通基盤
+        - フロントエンド
+        - その他
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 重要度
+      description: バグの重要度を選択してください
+      options:
+        - Critical（システム停止・データ損失）
+        - High（主要機能が使えない）
+        - Medium（機能に影響あり、回避策あり）
+        - Low（軽微な問題）
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: バグの概要
+      description: どのような問題が発生していますか？
+      placeholder: |
+        例：予約をキャンセルしてもチケットが返却されない
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: バグを再現する手順
+      placeholder: |
+        1. レッスンを予約する
+        2. 予約をキャンセルする
+        3. チケット残数を確認する
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する動作
+      description: 本来どのような動作になるべきですか？
+      placeholder: |
+        例：キャンセル後、チケットが1枚返却されるべき
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+      description: 実際にはどのような動作になっていますか？
+      placeholder: |
+        例：チケット残数が変わらない
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境
+      description: 問題が発生した環境
+      placeholder: |
+        - OS: macOS 14.0
+        - ブラウザ: Chrome 120
+        - 環境: ローカル / ステージング / 本番
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: ログ・エラーメッセージ
+      description: 関連するログやエラーメッセージ
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: cause
+    attributes:
+      label: 原因（わかれば）
+      description: 原因の推測や調査結果
+      placeholder: |
+        例：CancelReservationUseCaseでチケット返却処理が呼ばれていない
+    validations:
+      required: false
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 対応方針（わかれば）
+      description: 修正方法の案
+      placeholder: |
+        例：CancelReservationUseCaseにRefundTicketUseCaseの呼び出しを追加
+    validations:
+      required: false
