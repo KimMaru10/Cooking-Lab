@@ -101,9 +101,7 @@ cooking-lab/
 
 ### ③ドメインモデル図
 
-```
-[作成予定]
-```
+[ドメインモデル図](./docs/modeling/domain-model.md)
 
 ### ④オブジェクト図
 
