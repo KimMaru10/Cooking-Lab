@@ -97,9 +97,7 @@ cooking-lab/
 
 ### ②ユースケース図
 
-```
-[作成予定]
-```
+[ユースケース図](./docs/modeling/usecase.md)
 
 ### ③ドメインモデル図
 
