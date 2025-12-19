@@ -1,0 +1,1075 @@
+openapi: 3.0.3
+info:
+  title: Cooking Lab API
+  description: |
+    オンライン料理教室予約システム「クッキングラボ」のAPI仕様書
+
+    ## 認証
+    Laravel Sanctumを使用したトークン認証
+    - ログイン後、Bearerトークンをヘッダーに付与
+
+    ## アクター別アクセス権限
+    | エンドポイント | 生徒 | 講師 | スタッフ |
+    |--------------|------|------|---------|
+    | レッスン閲覧 | ○ | ○ | ○ |
+    | 予約操作 | ○ | - | - |
+    | チケット購入 | ○ | - | - |
+    | レッスン管理 | - | - | ○ |
+    | 出欠記録 | - | ○ | - |
+  version: 1.0.0
+  contact:
+    name: Cooking Lab
+servers:
+  - url: http://localhost:8000/api
+    description: ローカル開発環境
+
+tags:
+  - name: Auth
+    description: 認証関連
+  - name: Lessons
+    description: レッスン管理
+  - name: Schedules
+    description: スケジュール管理
+  - name: Reservations
+    description: 予約管理
+  - name: Tickets
+    description: チケット管理
+  - name: Attendance
+    description: 出欠管理
+
+paths:
+  # ========== 認証 ==========
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: 生徒登録
+      description: 新規生徒アカウントを作成
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - password_confirmation
+              properties:
+                name:
+                  type: string
+                  example: 山田太郎
+                email:
+                  type: string
+                  format: email
+                  example: yamada@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: password123
+                password_confirmation:
+                  type: string
+                  format: password
+                  example: password123
+      responses:
+        '201':
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: ログイン
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: yamada@example.com
+                password:
+                  type: string
+                  format: password
+                  example: password123
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: ログアウト
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: ログアウト成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: ログアウトしました
+
+  /auth/me:
+    get:
+      tags:
+        - Auth
+      summary: ログインユーザー情報取得
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  # ========== レッスン ==========
+  /lessons:
+    get:
+      tags:
+        - Lessons
+      summary: レッスン一覧取得
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [japanese, western, chinese, sweets]
+          description: カテゴリでフィルタ
+        - name: difficulty
+          in: query
+          schema:
+            type: string
+            enum: [beginner, intermediate, advanced]
+          description: 難易度でフィルタ
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 開催日（開始）
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 開催日（終了）
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LessonSummary'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+
+    post:
+      tags:
+        - Lessons
+      summary: レッスン登録
+      description: 運営スタッフのみ
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonInput'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /lessons/{lessonId}:
+    get:
+      tags:
+        - Lessons
+      summary: レッスン詳細取得
+      parameters:
+        - $ref: '#/components/parameters/lessonId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Lessons
+      summary: レッスン更新
+      description: 運営スタッフのみ
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/lessonId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonInput'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Lessons
+      summary: レッスン削除
+      description: 運営スタッフのみ。予約がある場合は削除不可。
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/lessonId'
+      responses:
+        '204':
+          description: 削除成功
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: 予約が存在するため削除不可
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========== スケジュール ==========
+  /lessons/{lessonId}/schedules:
+    post:
+      tags:
+        - Schedules
+      summary: スケジュール追加
+      description: 運営スタッフのみ
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/lessonId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleInput'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /schedules/{scheduleId}:
+    put:
+      tags:
+        - Schedules
+      summary: スケジュール更新
+      description: 運営スタッフのみ
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/scheduleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleInput'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Schedules
+      summary: スケジュール削除
+      description: 運営スタッフのみ。予約がある場合は削除不可。
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/scheduleId'
+      responses:
+        '204':
+          description: 削除成功
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: 予約が存在するため削除不可
+
+  /schedules/{scheduleId}/start:
+    post:
+      tags:
+        - Attendance
+      summary: レッスン開始
+      description: 担当講師のみ。開催時刻以降に実行可能。
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/scheduleId'
+      responses:
+        '200':
+          description: 開始成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: 開催時刻前のため開始不可
+
+  # ========== 予約 ==========
+  /reservations:
+    get:
+      tags:
+        - Reservations
+      summary: 予約一覧取得
+      description: ログインユーザーの予約一覧
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [reserved, cancelled, attended, absent]
+          description: ステータスでフィルタ
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Reservation'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+
+    post:
+      tags:
+        - Reservations
+      summary: 予約作成
+      description: |
+        生徒のみ。以下の条件を満たす必要あり：
+        - 有効なチケットを1枚以上保有
+        - スケジュールに空きあり
+        - 同一スケジュールへの重複予約なし
+        - ペナルティによる予約停止中でない
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - schedule_id
+              properties:
+                schedule_id:
+                  type: string
+                  example: SCH-001
+      responses:
+        '201':
+          description: 予約成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: |
+            予約不可（以下のいずれか）
+            - チケット不足
+            - 定員オーバー
+            - 重複予約
+            - 予約停止中
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /reservations/{reservationId}:
+    get:
+      tags:
+        - Reservations
+      summary: 予約詳細取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/reservationId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Reservations
+      summary: 予約キャンセル
+      description: 開催24時間前まで可能。チケットが1枚返却される。
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/reservationId'
+      responses:
+        '200':
+          description: キャンセル成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: キャンセル期限切れ（開催24時間前を過ぎている）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /reservations/{reservationId}/attendance:
+    post:
+      tags:
+        - Attendance
+      summary: 出欠記録
+      description: |
+        担当講師のみ。レッスン開始後に実行可能。
+        欠席の場合、生徒にペナルティポイント+1。
+        ペナルティ3点で1ヶ月間予約停止。
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/reservationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [attended, absent]
+                  example: attended
+      responses:
+        '200':
+          description: 記録成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: レッスン未開始
+
+  # ========== チケット ==========
+  /tickets:
+    get:
+      tags:
+        - Tickets
+      summary: チケット一覧取得
+      description: ログインユーザーの保有チケット一覧
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Ticket'
+                  summary:
+                    type: object
+                    properties:
+                      total_remaining:
+                        type: integer
+                        description: 有効チケット合計枚数
+                        example: 5
+
+    post:
+      tags:
+        - Tickets
+      summary: チケット購入
+      description: 生徒のみ。1枚/5枚/10枚プランから選択。
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - plan
+              properties:
+                plan:
+                  type: string
+                  enum: [single, five, ten]
+                  description: |
+                    - single: 1枚プラン
+                    - five: 5枚プラン
+                    - ten: 10枚プラン
+                  example: five
+      responses:
+        '201':
+          description: 購入成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ========== 講師用 ==========
+  /instructor/schedules:
+    get:
+      tags:
+        - Attendance
+      summary: 担当スケジュール一覧
+      description: ログイン講師の担当スケジュール一覧
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [upcoming, in_progress, completed]
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InstructorSchedule'
+
+  /instructor/schedules/{scheduleId}/students:
+    get:
+      tags:
+        - Attendance
+      summary: スケジュールの予約生徒一覧
+      description: 担当講師のみ
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/scheduleId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReservationWithStudent'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    lessonId:
+      name: lessonId
+      in: path
+      required: true
+      schema:
+        type: string
+      example: LES-001
+
+    scheduleId:
+      name: scheduleId
+      in: path
+      required: true
+      schema:
+        type: string
+      example: SCH-001
+
+    reservationId:
+      name: reservationId
+      in: path
+      required: true
+      schema:
+        type: string
+      example: RSV-001
+
+  responses:
+    Unauthorized:
+      description: 認証エラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: 認証が必要です
+            code: UNAUTHORIZED
+
+    Forbidden:
+      description: 権限エラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: この操作を行う権限がありません
+            code: FORBIDDEN
+
+    NotFound:
+      description: リソースが見つからない
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: 指定されたリソースが見つかりません
+            code: NOT_FOUND
+
+    ValidationError:
+      description: バリデーションエラー
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: 入力内容に誤りがあります
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+                example:
+                  email:
+                    - メールアドレスの形式が正しくありません
+                  password:
+                    - パスワードは8文字以上で入力してください
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+
+    PaginationMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        last_page:
+          type: integer
+          example: 5
+        per_page:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 48
+
+    # ========== Auth ==========
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+          example: 1|abcdefghijklmnopqrstuvwxyz
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: STU-001
+        name:
+          type: string
+          example: 山田太郎
+        email:
+          type: string
+          example: yamada@example.com
+        role:
+          type: string
+          enum: [student, instructor, staff]
+          example: student
+        penalty_point:
+          type: integer
+          example: 0
+        suspended_until:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+
+    # ========== Lesson ==========
+    LessonInput:
+      type: object
+      required:
+        - title
+        - description
+        - category
+        - difficulty
+      properties:
+        title:
+          type: string
+          maxLength: 100
+          example: 基本の和食
+        description:
+          type: string
+          maxLength: 2000
+          example: 出汁の取り方から学ぶ、基本的な和食の調理法を習得します。
+        category:
+          type: string
+          enum: [japanese, western, chinese, sweets]
+          example: japanese
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+          example: beginner
+
+    Lesson:
+      type: object
+      properties:
+        id:
+          type: string
+          example: LES-001
+        title:
+          type: string
+          example: 基本の和食
+        description:
+          type: string
+        category:
+          type: string
+          enum: [japanese, western, chinese, sweets]
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    LessonSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: LES-001
+        title:
+          type: string
+          example: 基本の和食
+        category:
+          type: string
+          example: japanese
+        category_label:
+          type: string
+          example: 和食
+        difficulty:
+          type: string
+          example: beginner
+        difficulty_label:
+          type: string
+          example: 初級
+        next_schedule:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+            start_at:
+              type: string
+              format: date-time
+            available_slots:
+              type: integer
+
+    LessonDetail:
+      allOf:
+        - $ref: '#/components/schemas/Lesson'
+        - type: object
+          properties:
+            schedules:
+              type: array
+              items:
+                $ref: '#/components/schemas/Schedule'
+
+    # ========== Schedule ==========
+    ScheduleInput:
+      type: object
+      required:
+        - start_at
+        - end_at
+        - capacity
+        - instructor_id
+      properties:
+        start_at:
+          type: string
+          format: date-time
+          example: '2025-01-15T10:00:00+09:00'
+        end_at:
+          type: string
+          format: date-time
+          example: '2025-01-15T12:00:00+09:00'
+        capacity:
+          type: integer
+          minimum: 1
+          maximum: 8
+          example: 6
+        instructor_id:
+          type: string
+          example: INS-001
+
+    Schedule:
+      type: object
+      properties:
+        id:
+          type: string
+          example: SCH-001
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+          example: 6
+        reservation_count:
+          type: integer
+          example: 3
+        available_slots:
+          type: integer
+          example: 3
+        status:
+          type: string
+          enum: [upcoming, in_progress, completed, cancelled]
+          example: upcoming
+        instructor:
+          $ref: '#/components/schemas/InstructorSummary'
+
+    InstructorSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: INS-001
+        name:
+          type: string
+          example: 佐藤花子
+
+    InstructorSchedule:
+      allOf:
+        - $ref: '#/components/schemas/Schedule'
+        - type: object
+          properties:
+            lesson:
+              $ref: '#/components/schemas/LessonSummary'
+
+    # ========== Reservation ==========
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+          example: RSV-001
+        schedule_id:
+          type: string
+          example: SCH-001
+        status:
+          type: string
+          enum: [reserved, cancelled, attended, absent]
+          example: reserved
+        status_label:
+          type: string
+          example: 予約済み
+        reserved_at:
+          type: string
+          format: date-time
+        cancelled_at:
+          type: string
+          format: date-time
+          nullable: true
+        can_cancel:
+          type: boolean
+          description: キャンセル可能かどうか（24時間前まで）
+          example: true
+
+    ReservationDetail:
+      allOf:
+        - $ref: '#/components/schemas/Reservation'
+        - type: object
+          properties:
+            schedule:
+              $ref: '#/components/schemas/Schedule'
+            lesson:
+              $ref: '#/components/schemas/LessonSummary'
+
+    ReservationWithStudent:
+      allOf:
+        - $ref: '#/components/schemas/Reservation'
+        - type: object
+          properties:
+            student:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+
+    # ========== Ticket ==========
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: string
+          example: TKT-001
+        plan:
+          type: string
+          enum: [single, five, ten]
+          example: five
+        plan_label:
+          type: string
+          example: 5枚プラン
+        remaining_count:
+          type: integer
+          example: 3
+        purchased_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        is_expired:
+          type: boolean
+          example: false
+        remaining_days:
+          type: integer
+          description: 有効期限までの残り日数
+          example: 120
