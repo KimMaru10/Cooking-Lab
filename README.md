@@ -105,9 +105,7 @@ cooking-lab/
 
 ### ④オブジェクト図
 
-```
-[作成予定]
-```
+[オブジェクト図](./docs/modeling/object-diagram.md)
 
 ## セットアップ
 
