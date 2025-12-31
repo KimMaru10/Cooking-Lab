@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\LessonController;
+use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\JwtFromCookie;
@@ -19,6 +20,12 @@ Route::prefix('lessons')->group(function () {
     Route::get('/{lesson}', [LessonController::class, 'show']);
 });
 
+// スケジュール（認証不要：一覧・詳細）
+Route::prefix('schedules')->group(function () {
+    Route::get('/', [ScheduleController::class, 'index']);
+    Route::get('/{schedule}', [ScheduleController::class, 'show']);
+});
+
 // 認証必要（JWT + Cookie）
 Route::middleware([JwtFromCookie::class, 'auth:api'])->group(function () {
     Route::prefix('auth')->group(function () {
@@ -31,5 +38,12 @@ Route::middleware([JwtFromCookie::class, 'auth:api'])->group(function () {
         Route::post('/lessons', [LessonController::class, 'store']);
         Route::put('/lessons/{lesson}', [LessonController::class, 'update']);
         Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy']);
+    });
+
+    // スケジュール管理（スタッフ・講師）
+    Route::middleware([CheckRole::class . ':staff,instructor'])->group(function () {
+        Route::post('/schedules', [ScheduleController::class, 'store']);
+        Route::put('/schedules/{schedule}', [ScheduleController::class, 'update']);
+        Route::delete('/schedules/{schedule}', [ScheduleController::class, 'destroy']);
     });
 });
