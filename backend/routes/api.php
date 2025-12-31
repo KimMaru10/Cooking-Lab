@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\LessonController;
+use App\Http\Controllers\Api\ReservationController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Middleware\CheckRole;
@@ -33,11 +34,21 @@ Route::middleware([JwtFromCookie::class, 'auth:api'])->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
     });
 
+    // 予約（生徒）
+    Route::prefix('reservations')->group(function () {
+        Route::get('/', [ReservationController::class, 'index']);
+        Route::post('/', [ReservationController::class, 'store']);
+        Route::delete('/{reservation}', [ReservationController::class, 'destroy']);
+    });
+
     // レッスン管理（スタッフのみ）
     Route::middleware([CheckRole::class . ':staff'])->group(function () {
         Route::post('/lessons', [LessonController::class, 'store']);
         Route::put('/lessons/{lesson}', [LessonController::class, 'update']);
         Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy']);
+
+        // 全予約一覧（スタッフ）
+        Route::get('/admin/reservations', [ReservationController::class, 'adminIndex']);
     });
 
     // スケジュール管理（スタッフ・講師）
