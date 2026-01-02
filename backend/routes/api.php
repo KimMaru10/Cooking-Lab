@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\ReservationController;
 use App\Http\Controllers\Api\ScheduleController;
+use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\JwtFromCookie;
@@ -41,6 +42,13 @@ Route::middleware([JwtFromCookie::class, 'auth:api'])->group(function () {
         Route::delete('/{reservation}', [ReservationController::class, 'destroy']);
     });
 
+    // チケット
+    Route::prefix('tickets')->group(function () {
+        Route::get('/', [TicketController::class, 'index']);
+        Route::post('/', [TicketController::class, 'store']);
+        Route::get('/{ticket}', [TicketController::class, 'show']);
+    });
+
     // レッスン管理（スタッフのみ）
     Route::middleware([CheckRole::class . ':staff'])->group(function () {
         Route::post('/lessons', [LessonController::class, 'store']);
@@ -49,6 +57,9 @@ Route::middleware([JwtFromCookie::class, 'auth:api'])->group(function () {
 
         // 全予約一覧（スタッフ）
         Route::get('/admin/reservations', [ReservationController::class, 'adminIndex']);
+
+        // 全チケット一覧（スタッフ）
+        Route::get('/admin/tickets', [TicketController::class, 'adminIndex']);
     });
 
     // スケジュール管理（スタッフ・講師）
