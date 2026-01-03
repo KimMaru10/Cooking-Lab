@@ -5,8 +5,9 @@ info:
     オンライン料理教室予約システム「クッキングラボ」のAPI仕様書
 
     ## 認証
-    Laravel Sanctumを使用したトークン認証
-    - ログイン後、Bearerトークンをヘッダーに付与
+    JWT（JSON Web Token）+ HttpOnly Cookieを使用
+    - ログイン後、access_tokenとrefresh_tokenがCookieに設定される
+    - APIリクエスト時は自動的にCookieが送信される
 
     ## アクター別アクセス権限
     | エンドポイント | 生徒 | 講師 | スタッフ |
@@ -109,6 +110,22 @@ paths:
       responses:
         '200':
           description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Auth
+      summary: トークンリフレッシュ
+      description: refresh_tokenを使用してaccess_tokenを再発行
+      responses:
+        '200':
+          description: リフレッシュ成功
           content:
             application/json:
               schema:
@@ -299,16 +316,68 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   # ========== スケジュール ==========
-  /lessons/{lessonId}/schedules:
+  /schedules:
+    get:
+      tags:
+        - Schedules
+      summary: スケジュール一覧取得
+      parameters:
+        - name: lesson_id
+          in: query
+          schema:
+            type: integer
+          description: レッスンIDでフィルタ
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 日付でフィルタ
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 開始日（以降）
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 終了日（以前）
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [scheduled, in_progress, completed, cancelled]
+          description: ステータスでフィルタ
+        - name: available
+          in: query
+          schema:
+            type: boolean
+          description: 空きありのみ（true）
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Schedule'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+
     post:
       tags:
         - Schedules
       summary: スケジュール追加
-      description: 運営スタッフのみ
+      description: 運営スタッフ・講師のみ
       security:
         - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/lessonId'
       requestBody:
         required: true
         content:
@@ -328,11 +397,27 @@ paths:
           $ref: '#/components/responses/ValidationError'
 
   /schedules/{scheduleId}:
+    get:
+      tags:
+        - Schedules
+      summary: スケジュール詳細取得
+      parameters:
+        - $ref: '#/components/parameters/scheduleId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
     put:
       tags:
         - Schedules
       summary: スケジュール更新
-      description: 運営スタッフのみ
+      description: 運営スタッフ・講師のみ
       security:
         - bearerAuth: []
       parameters:
@@ -359,7 +444,7 @@ paths:
       tags:
         - Schedules
       summary: スケジュール削除
-      description: 運営スタッフのみ。予約がある場合は削除不可。
+      description: 運営スタッフ・講師のみ。予約がある場合は削除不可。
       security:
         - bearerAuth: []
       parameters:
@@ -620,6 +705,123 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /tickets/{ticketId}:
+    get:
+      tags:
+        - Tickets
+      summary: チケット詳細取得
+      description: 自分のチケットまたはスタッフのみ閲覧可能
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ticketId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ========== 管理者用（スタッフ） ==========
+  /admin/reservations:
+    get:
+      tags:
+        - Reservations
+      summary: 全予約一覧取得（管理者用）
+      description: スタッフのみ
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: integer
+          description: ユーザーIDでフィルタ
+        - name: schedule_id
+          in: query
+          schema:
+            type: integer
+          description: スケジュールIDでフィルタ
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [reserved, cancelled, attended, absent]
+          description: ステータスでフィルタ
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReservationWithStudent'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/tickets:
+    get:
+      tags:
+        - Tickets
+      summary: 全チケット一覧取得（管理者用）
+      description: スタッフのみ
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: integer
+          description: ユーザーIDでフィルタ
+        - name: plan
+          in: query
+          schema:
+            type: string
+            enum: [single, five, ten]
+          description: プランでフィルタ
+        - name: valid_only
+          in: query
+          schema:
+            type: boolean
+          description: 有効なチケットのみ（true）
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Ticket'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   # ========== 講師用 ==========
   /instructor/schedules:
     get:
@@ -712,6 +914,14 @@ components:
       schema:
         type: string
       example: RSV-001
+
+    ticketId:
+      name: ticketId
+      in: path
+      required: true
+      schema:
+        type: integer
+      example: 1
 
   responses:
     Unauthorized:
@@ -1048,15 +1258,20 @@ components:
       type: object
       properties:
         id:
-          type: string
-          example: TKT-001
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        user:
+          $ref: '#/components/schemas/User'
         plan:
           type: string
           enum: [single, five, ten]
           example: five
         plan_label:
           type: string
-          example: 5枚プラン
+          example: 5回券
         remaining_count:
           type: integer
           example: 3
@@ -1069,7 +1284,10 @@ components:
         is_expired:
           type: boolean
           example: false
-        remaining_days:
-          type: integer
-          description: 有効期限までの残り日数
-          example: 120
+        is_valid:
+          type: boolean
+          description: 有効なチケットかどうか（残数あり＋期限内）
+          example: true
+        created_at:
+          type: string
+          format: date-time
