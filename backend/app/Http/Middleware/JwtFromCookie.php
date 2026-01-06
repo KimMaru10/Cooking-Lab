@@ -17,21 +17,6 @@ class JwtFromCookie
             $request->headers->set('Authorization', 'Bearer ' . $accessToken);
         }
 
-        // セッションとの整合性チェック
-        $refreshToken = $request->cookie('refresh_token');
-        $sessionTokenId = session('token_id');
-
-        if ($refreshToken && $sessionTokenId) {
-            $tokenPrefix = substr($refreshToken, 0, 8);
-            $expectedPrefix = explode(':', $sessionTokenId)[1] ?? '';
-
-            if ($tokenPrefix !== $expectedPrefix) {
-                return response()->json([
-                    'message' => 'セッションが無効です。再度ログインしてください。',
-                ], 401);
-            }
-        }
-
         return $next($request);
     }
 }
