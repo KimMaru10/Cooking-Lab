@@ -51,19 +51,57 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        // リフレッシュトークンを削除
+        // リフレッシュトークンを削除（認証状態に関わらず実行）
         $refreshToken = $request->cookie('refresh_token');
         if ($refreshToken) {
             RefreshToken::where('token', $refreshToken)->delete();
         }
 
-        // JWTを無効化
-        JWTAuth::invalidate(JWTAuth::getToken());
+        // JWTを無効化（トークンが存在する場合のみ）
+        try {
+            $token = JWTAuth::getToken();
+            if ($token) {
+                JWTAuth::invalidate($token);
+            }
+        } catch (\Exception $e) {
+            // トークンが既に無効な場合や取得できない場合は無視
+            // リフレッシュトークンとクッキーの削除は続行
+        }
 
-        return response()->json([
+        // クッキーを削除（認証状態に関わらず実行）
+        // 開発環境と本番環境で適切な設定を使用
+        $domain = app()->environment('local') ? 'localhost' : null;
+        $isSecure = app()->environment('production');
+        $sameSite = app()->environment('local') ? false : 'Lax';
+
+        $response = response()->json([
             'message' => 'ログアウトしました',
-        ])->withoutCookie('access_token')
-          ->withoutCookie('refresh_token');
+        ]);
+
+        // クッキーを削除するために、元のクッキーと同じパラメータで削除クッキーを作成
+        return $response
+            ->withoutCookie(cookie(
+                'access_token',
+                null,
+                -1,
+                '/',
+                $domain,
+                $isSecure,
+                true,
+                false,
+                $sameSite
+            ))
+            ->withoutCookie(cookie(
+                'refresh_token',
+                null,
+                -1,
+                '/',
+                $domain,
+                $isSecure,
+                true,
+                false,
+                $sameSite
+            ));
     }
 
     public function me(Request $request): JsonResponse
@@ -117,6 +155,11 @@ class AuthController extends Controller
         // セッションにトークンIDを保存（整合性チェック用）
         session(['token_id' => $user->id . ':' . substr($refreshToken, 0, 8)]);
 
+        // 開発環境ではsecure: false、本番環境ではsecure: true
+        $isSecure = app()->environment('production');
+        $domain = app()->environment('local') ? 'localhost' : null;
+        $sameSite = app()->environment('local') ? false : 'Lax';
+
         return response()->json([
             'message' => $message,
             'user' => $user,
@@ -126,22 +169,22 @@ class AuthController extends Controller
             $accessToken,
             self::ACCESS_TOKEN_TTL,
             '/',
-            null,
-            true,  // secure (HTTPS only)
+            $domain,
+            $isSecure,
             true,  // httpOnly
             false,
-            'Strict'
+            $sameSite
         ))
         ->withCookie(cookie(
             'refresh_token',
             $refreshToken,
             self::REFRESH_TOKEN_TTL,
             '/',
-            null,
-            true,
+            $domain,
+            $isSecure,
             true,
             false,
-            'Strict'
+            $sameSite
         ));
     }
 }
