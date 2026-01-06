@@ -12,7 +12,23 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // APIルートをステートフルにしてCookieを処理可能にする
+        $middleware->statefulApi();
+
+        $middleware->api(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+
+        // Cookie暗号化からJWTトークンを除外
+        $middleware->encryptCookies(except: [
+            'access_token',
+            'refresh_token',
+        ]);
+
+        // APIルートからCSRF保護を除外
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
