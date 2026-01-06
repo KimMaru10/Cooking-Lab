@@ -16,6 +16,11 @@ Route::prefix('auth')->group(function () {
     Route::post('/refresh', [AuthController::class, 'refresh']);
 });
 
+// ログアウト（認証不要だがCookieは読む）
+Route::prefix('auth')->middleware([JwtFromCookie::class])->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
+
 // レッスン（認証不要：一覧・詳細）
 Route::prefix('lessons')->group(function () {
     Route::get('/', [LessonController::class, 'index']);
@@ -31,7 +36,6 @@ Route::prefix('schedules')->group(function () {
 // 認証必要（JWT + Cookie）
 Route::middleware([JwtFromCookie::class, 'auth:api'])->group(function () {
     Route::prefix('auth')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
     });
 
