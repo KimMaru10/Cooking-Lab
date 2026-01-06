@@ -9,14 +9,27 @@ const api = axios.create({
   },
 });
 
+// リフレッシュ不要なエンドポイント
+const skipRefreshEndpoints = ['/auth/me', '/auth/refresh', '/auth/login', '/auth/register', '/auth/logout'];
+
 // レスポンスインターセプター（401エラー時にリフレッシュ）
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const requestUrl = originalRequest?.url || '';
 
-    // 401エラーかつリトライしていない場合
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // リフレッシュ不要なエンドポイントはスキップ
+    const shouldSkipRefresh = skipRefreshEndpoints.some((endpoint) =>
+      requestUrl.includes(endpoint)
+    );
+
+    // 401エラーかつリトライしていない場合かつリフレッシュ対象の場合
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !shouldSkipRefresh
+    ) {
       originalRequest._retry = true;
 
       try {
@@ -24,12 +37,12 @@ api.interceptors.response.use(
         await api.post('/auth/refresh');
         // 元のリクエストを再実行
         return api(originalRequest);
-      } catch (refreshError) {
+      } catch {
         // リフレッシュ失敗時はログインページへ
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
         }
-        return Promise.reject(refreshError);
+        return Promise.reject(error);
       }
     }
 
