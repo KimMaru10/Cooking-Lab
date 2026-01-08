@@ -6,19 +6,12 @@ use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Middleware\CheckRole;
-use App\Http\Middleware\JwtFromCookie;
 use Illuminate\Support\Facades\Route;
 
 // 認証不要
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/refresh', [AuthController::class, 'refresh']);
-});
-
-// ログアウト（認証不要だがCookieは読む）
-Route::prefix('auth')->middleware([JwtFromCookie::class])->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
 });
 
 // レッスン（認証不要：一覧・詳細）
@@ -33,10 +26,11 @@ Route::prefix('schedules')->group(function () {
     Route::get('/{schedule}', [ScheduleController::class, 'show']);
 });
 
-// 認証必要（JWT + Cookie）
-Route::middleware([JwtFromCookie::class, 'auth:api'])->group(function () {
+// 認証必要（Sanctum）
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('auth')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
+        Route::post('/logout', [AuthController::class, 'logout']);
     });
 
     // 予約（生徒）
