@@ -1,48 +1,44 @@
 import axios from 'axios';
 
+const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+// apiURLから/apiを除いたベースURL（sanctum/csrf-cookie用）
+const baseURL = apiURL.replace(/\/api$/, '');
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
+  baseURL: apiURL,
   withCredentials: true,
+  withXSRFToken: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
 });
 
-// リフレッシュ不要なエンドポイント
-const skipRefreshEndpoints = ['/auth/me', '/auth/refresh', '/auth/login', '/auth/register', '/auth/logout'];
+// CSRF Cookieを取得（Sanctum SPA認証）
+export const getCsrfCookie = async () => {
+  await axios.get(`${baseURL}/sanctum/csrf-cookie`, {
+    withCredentials: true,
+  });
+};
 
-// レスポンスインターセプター（401エラー時にリフレッシュ）
+// 認証エンドポイント（401でリダイレクト不要）
+const authEndpoints = ['/auth/me', '/auth/login', '/auth/register', '/auth/logout'];
+
+// レスポンスインターセプター（401エラー時にログインページへリダイレクト）
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-    const requestUrl = originalRequest?.url || '';
-
-    // リフレッシュ不要なエンドポイントはスキップ
-    const shouldSkipRefresh = skipRefreshEndpoints.some((endpoint) =>
+    const requestUrl = error.config?.url || '';
+    const isAuthEndpoint = authEndpoints.some((endpoint) =>
       requestUrl.includes(endpoint)
     );
 
-    // 401エラーかつリトライしていない場合かつリフレッシュ対象の場合
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !shouldSkipRefresh
-    ) {
-      originalRequest._retry = true;
-
-      try {
-        // トークンリフレッシュ
-        await api.post('/auth/refresh');
-        // 元のリクエストを再実行
-        return api(originalRequest);
-      } catch {
-        // リフレッシュ失敗時はログインページへ
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-        return Promise.reject(error);
+    // 認証エンドポイント以外で401エラーの場合はログインページへ
+    if (error.response?.status === 401 && !isAuthEndpoint) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
       }
     }
 

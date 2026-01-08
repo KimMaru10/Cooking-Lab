@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import api from '@/lib/api';
+import api, { getCsrfCookie } from '@/lib/api';
 
 type User = {
   id: number;
@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
+    await getCsrfCookie();
     const response = await api.post('/auth/login', { email, password });
     setUser(response.data.user);
   };
@@ -50,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     passwordConfirmation: string
   ) => {
+    await getCsrfCookie();
     const response = await api.post('/auth/register', {
       name,
       email,
