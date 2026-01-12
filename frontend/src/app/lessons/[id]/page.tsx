@@ -13,7 +13,6 @@ export default function LessonDetailPage() {
   const { user } = useAuth();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [reservingId, setReservingId] = useState<number | null>(null);
 
   useEffect(() => {
     if (params.id) {
@@ -34,23 +33,12 @@ export default function LessonDetailPage() {
     }
   };
 
-  const handleReserve = async (scheduleId: number) => {
+  const handleReserve = (scheduleId: number) => {
     if (!user) {
       router.push('/login');
       return;
     }
-
-    setReservingId(scheduleId);
-    try {
-      await api.post('/reservations', { schedule_id: scheduleId });
-      alert('予約が完了しました');
-      fetchLesson(); // 予約数を更新
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      alert(err.response?.data?.message || '予約に失敗しました');
-    } finally {
-      setReservingId(null);
-    }
+    router.push(`/reservations/confirm?schedule_id=${scheduleId}`);
   };
 
   const formatDate = (dateString: string) => {
@@ -182,18 +170,14 @@ export default function LessonDetailPage() {
                           </span>
                           <button
                             onClick={() => handleReserve(schedule.id)}
-                            disabled={schedule.is_full || reservingId === schedule.id}
+                            disabled={schedule.is_full}
                             className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                               schedule.is_full
                                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                 : 'bg-orange-500 text-white hover:bg-orange-600'
                             }`}
                           >
-                            {reservingId === schedule.id
-                              ? '予約中...'
-                              : schedule.is_full
-                              ? '満席'
-                              : '予約する'}
+                            {schedule.is_full ? '満席' : '予約する'}
                           </button>
                         </div>
                       </div>
