@@ -205,14 +205,14 @@ export default function ReservationConfirmPage() {
 
             {totalRemainingTickets === 0 && (
               <div className="mt-4 p-4 bg-red-50 rounded-xl">
-                <p className="text-red-600 text-sm">
+                <p className="text-red-600 text-sm mb-3">
                   チケットがありません。先にチケットを購入してください。
                 </p>
                 <Link
                   href="/tickets/purchase"
-                  className="mt-2 inline-block text-red-600 hover:underline text-sm font-medium"
+                  className="block w-full py-3 bg-orange-500 text-white text-center rounded-full font-medium hover:bg-orange-600 transition"
                 >
-                  チケットを購入する →
+                  チケットを購入する
                 </Link>
               </div>
             )}

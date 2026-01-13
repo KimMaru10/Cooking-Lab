@@ -6,10 +6,12 @@ import Link from 'next/link';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Reservation, Ticket } from '@/types/reservation';
+import { useViewedLessonsStore } from '@/stores/viewedLessonsStore';
 
 export default function MyPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
+  const viewedLessons = useViewedLessonsStore((state) => state.viewedLessons);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -156,8 +158,42 @@ export default function MyPage() {
               </div>
             </div>
 
-            {/* Reservations */}
-            <div className="lg:col-span-2">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Viewed Lessons */}
+              {viewedLessons.length > 0 && (
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">最近見た講座</h2>
+                  <div className="space-y-3">
+                    {viewedLessons.map((lesson) => (
+                      <Link
+                        key={lesson.id}
+                        href={`/lessons/${lesson.id}`}
+                        className="block border border-gray-200 rounded-xl p-4 hover:border-orange-300 hover:bg-orange-50 transition"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-gray-800">{lesson.title}</div>
+                            <div className="flex gap-2 mt-1">
+                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                                {lesson.category_label}
+                              </span>
+                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                                {lesson.difficulty_label}
+                              </span>
+                            </div>
+                          </div>
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Reservations */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h2 className="text-xl font-bold text-gray-800 mb-4">予約履歴</h2>
 
