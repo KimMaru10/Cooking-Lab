@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\LessonController;
+use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\ReservationController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\TicketController;
@@ -24,6 +25,12 @@ Route::prefix('lessons')->group(function () {
 Route::prefix('schedules')->group(function () {
     Route::get('/', [ScheduleController::class, 'index']);
     Route::get('/{schedule}', [ScheduleController::class, 'show']);
+});
+
+// レシピ（認証不要：楽天レシピAPI）
+Route::prefix('recipes')->group(function () {
+    Route::get('/categories', [RecipeController::class, 'categories']);
+    Route::get('/ranking', [RecipeController::class, 'ranking']);
 });
 
 // 認証必要（Sanctum）

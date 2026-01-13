@@ -1,6 +1,28 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import api from '@/lib/api';
+import { Recipe } from '@/types/recipe';
 
 export default function Home() {
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [isLoadingRecipes, setIsLoadingRecipes] = useState(true);
+
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        const response = await api.get('/recipes/ranking');
+        setRecipes((response.data.recipes || []).slice(0, 4));
+      } catch (error) {
+        console.error('レシピの取得に失敗しました', error);
+      } finally {
+        setIsLoadingRecipes(false);
+      }
+    };
+    fetchRecipes();
+  }, []);
+
   return (
     <div>
       {/* Hero Section - Orange */}
@@ -57,6 +79,64 @@ export default function Home() {
                 <div className="font-bold text-xl">{item.name}</div>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Recipe Ranking Section */}
+      <section className="bg-gray-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-gray-800">
+            人気レシピランキング
+          </h2>
+          <p className="text-center text-gray-600 mb-12">
+            楽天レシピの人気ランキングをチェック
+          </p>
+          {isLoadingRecipes ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-green-500 border-t-transparent"></div>
+            </div>
+          ) : recipes.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {recipes.map((recipe) => (
+                <a
+                  key={recipe.recipeId}
+                  href={recipe.recipeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-50 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition group"
+                >
+                  <div className="relative h-48">
+                    <img
+                      src={recipe.foodImageUrl}
+                      alt={recipe.recipeTitle}
+                      className="w-full h-full object-cover group-hover:scale-105 transition"
+                    />
+                    <div className="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
+                      {recipe.rank}位
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-gray-800 line-clamp-2 mb-2">
+                      {recipe.recipeTitle}
+                    </h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <span>{recipe.recipeIndication}</span>
+                      <span>•</span>
+                      <span>{recipe.recipeCost}</span>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          ) : null}
+          <div className="text-center mt-8">
+            <Link
+              href="/recipes"
+              className="inline-block bg-green-600 text-white px-8 py-3 rounded-full font-bold hover:bg-green-700 transition"
+            >
+              もっと見る
+            </Link>
           </div>
         </div>
       </section>

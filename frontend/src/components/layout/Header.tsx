@@ -45,6 +45,12 @@ export default function Header() {
               レッスン
             </Link>
             <Link
+              href="/recipes"
+              className="text-gray-700 hover:text-green-600 font-medium transition"
+            >
+              レシピ
+            </Link>
+            <Link
               href="/about"
               className="text-gray-700 hover:text-orange-500 font-medium transition"
             >
@@ -124,6 +130,12 @@ export default function Header() {
               className="block py-2 text-gray-700 hover:text-orange-500"
             >
               レッスン
+            </Link>
+            <Link
+              href="/recipes"
+              className="block py-2 text-gray-700 hover:text-green-600"
+            >
+              レシピ
             </Link>
             <Link
               href="/about"

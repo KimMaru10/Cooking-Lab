@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'rakuten' => [
+        'app_id' => env('RAKUTEN_APP_ID'),
+    ],
+
 ];
