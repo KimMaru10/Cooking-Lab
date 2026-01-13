@@ -6,14 +6,17 @@ import Link from 'next/link';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Reservation, Ticket } from '@/types/reservation';
+import { useViewedLessonsStore } from '@/stores/viewedLessonsStore';
 
 export default function MyPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
+  const viewedLessons = useViewedLessonsStore((state) => state.viewedLessons);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [cancelModalReservation, setCancelModalReservation] = useState<Reservation | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -43,13 +46,25 @@ export default function MyPage() {
     }
   };
 
-  const handleCancel = async (reservationId: number) => {
-    if (!confirm('この予約をキャンセルしますか？')) return;
+  const canCancel = (reservation: Reservation): boolean => {
+    if (!reservation.schedule) return false;
+    const startAt = new Date(reservation.schedule.start_at);
+    const now = new Date();
+    const hoursUntilStart = (startAt.getTime() - now.getTime()) / (1000 * 60 * 60);
+    return hoursUntilStart >= 24;
+  };
 
-    setCancellingId(reservationId);
+  const handleCancelClick = (reservation: Reservation) => {
+    setCancelModalReservation(reservation);
+  };
+
+  const handleCancelConfirm = async () => {
+    if (!cancelModalReservation) return;
+
+    setCancellingId(cancelModalReservation.id);
     try {
-      await api.delete(`/reservations/${reservationId}`);
-      alert('予約をキャンセルしました');
+      await api.delete(`/reservations/${cancelModalReservation.id}`);
+      setCancelModalReservation(null);
       fetchData();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
@@ -143,8 +158,42 @@ export default function MyPage() {
               </div>
             </div>
 
-            {/* Reservations */}
-            <div className="lg:col-span-2">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Viewed Lessons */}
+              {viewedLessons.length > 0 && (
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">最近見た講座</h2>
+                  <div className="space-y-3">
+                    {viewedLessons.map((lesson) => (
+                      <Link
+                        key={lesson.id}
+                        href={`/lessons/${lesson.id}`}
+                        className="block border border-gray-200 rounded-xl p-4 hover:border-orange-300 hover:bg-orange-50 transition"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-gray-800">{lesson.title}</div>
+                            <div className="flex gap-2 mt-1">
+                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                                {lesson.category_label}
+                              </span>
+                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                                {lesson.difficulty_label}
+                              </span>
+                            </div>
+                          </div>
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Reservations */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h2 className="text-xl font-bold text-gray-800 mb-4">予約履歴</h2>
 
@@ -205,15 +254,19 @@ export default function MyPage() {
 
                         {reservation.status === 'reserved' && (
                           <div className="mt-4 flex justify-end">
-                            <button
-                              onClick={() => handleCancel(reservation.id)}
-                              disabled={cancellingId === reservation.id}
-                              className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50"
-                            >
-                              {cancellingId === reservation.id
-                                ? 'キャンセル中...'
-                                : '予約をキャンセル'}
-                            </button>
+                            {canCancel(reservation) ? (
+                              <button
+                                onClick={() => handleCancelClick(reservation)}
+                                disabled={cancellingId === reservation.id}
+                                className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50"
+                              >
+                                予約をキャンセル
+                              </button>
+                            ) : (
+                              <span className="text-sm text-gray-400">
+                                24時間前を過ぎたためキャンセル不可
+                              </span>
+                            )}
                           </div>
                         )}
                       </div>
@@ -225,6 +278,57 @@ export default function MyPage() {
           </div>
         </div>
       </section>
+
+      {/* Cancel Confirmation Modal */}
+      {cancelModalReservation && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              予約をキャンセルしますか？
+            </h3>
+
+            {cancelModalReservation.schedule?.lesson && (
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <div className="font-medium text-gray-800">
+                  {cancelModalReservation.schedule.lesson.title}
+                </div>
+                <div className="text-sm text-gray-600 mt-1">
+                  {formatDate(cancelModalReservation.schedule.start_at)}{' '}
+                  {formatTime(cancelModalReservation.schedule.start_at)} -{' '}
+                  {formatTime(cancelModalReservation.schedule.end_at)}
+                </div>
+              </div>
+            )}
+
+            <div className="bg-green-50 rounded-xl p-4 mb-6">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-green-700 font-medium">
+                  チケット1回分が返却されます
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setCancelModalReservation(null)}
+                className="flex-1 py-3 rounded-full border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition"
+              >
+                戻る
+              </button>
+              <button
+                onClick={handleCancelConfirm}
+                disabled={cancellingId !== null}
+                className="flex-1 py-3 rounded-full bg-red-500 text-white font-medium hover:bg-red-600 transition disabled:opacity-50"
+              >
+                {cancellingId !== null ? 'キャンセル中...' : 'キャンセルする'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,11 +6,13 @@ import Link from 'next/link';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Lesson, Schedule } from '@/types/lesson';
+import { useViewedLessonsStore } from '@/stores/viewedLessonsStore';
 
 export default function LessonDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const addViewedLesson = useViewedLessonsStore((state) => state.addViewedLesson);
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -19,6 +21,20 @@ export default function LessonDetailPage() {
       fetchLesson();
     }
   }, [params.id]);
+
+  // 閲覧履歴をストアに保存
+  useEffect(() => {
+    if (lesson) {
+      addViewedLesson({
+        id: lesson.id,
+        title: lesson.title,
+        category: lesson.category,
+        category_label: lesson.category_label,
+        difficulty: lesson.difficulty,
+        difficulty_label: lesson.difficulty_label,
+      });
+    }
+  }, [lesson, addViewedLesson]);
 
   const fetchLesson = async () => {
     setIsLoading(true);
