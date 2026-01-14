@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/api';
-import { useAuthStore } from '@/stores/authStore';
-import { InstructorSchedule, InstructorReservation } from '@/types/instructor';
+import { useAuth } from '@/contexts/AuthContext';
+import { InstructorSchedule } from '@/types/instructor';
 
 export default function InstructorDashboard() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [schedules, setSchedules] = useState<InstructorSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSchedule, setSelectedSchedule] = useState<InstructorSchedule | null>(null);
@@ -17,16 +17,18 @@ export default function InstructorDashboard() {
   const [attendances, setAttendances] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (isAuthLoading) return;
+
+    if (!user) {
       router.push('/login');
       return;
     }
-    if (user?.role !== 'instructor') {
+    if (user.role !== 'instructor') {
       router.push('/');
       return;
     }
     fetchSchedules();
-  }, [isAuthenticated, user, router]);
+  }, [isAuthLoading, user, router]);
 
   const fetchSchedules = async () => {
     try {
