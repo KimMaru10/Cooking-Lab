@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\InstructorController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\ReservationController;
@@ -72,5 +73,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/schedules', [ScheduleController::class, 'store']);
         Route::put('/schedules/{schedule}', [ScheduleController::class, 'update']);
         Route::delete('/schedules/{schedule}', [ScheduleController::class, 'destroy']);
+    });
+
+    // 講師用ダッシュボード
+    Route::prefix('instructor')->group(function () {
+        Route::get('/schedules', [InstructorController::class, 'schedules']);
+        Route::post('/schedules/{schedule}/start', [InstructorController::class, 'startLesson']);
+        Route::post('/schedules/{schedule}/attendance', [InstructorController::class, 'markAttendance']);
+        Route::post('/schedules/{schedule}/complete', [InstructorController::class, 'completeLesson']);
     });
 });

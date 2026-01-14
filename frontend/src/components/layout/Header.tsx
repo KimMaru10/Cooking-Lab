@@ -61,6 +61,14 @@ export default function Header() {
               <span className="text-gray-400">...</span>
             ) : user ? (
               <>
+                {user.role === 'instructor' && (
+                  <Link
+                    href="/instructor"
+                    className="text-gray-700 hover:text-orange-500 font-medium transition"
+                  >
+                    講師管理
+                  </Link>
+                )}
                 <Link
                   href="/mypage"
                   className="text-gray-700 hover:text-orange-500 font-medium transition"
@@ -148,6 +156,14 @@ export default function Header() {
               <span className="block py-2 text-gray-400">...</span>
             ) : user ? (
               <>
+                {user.role === 'instructor' && (
+                  <Link
+                    href="/instructor"
+                    className="block py-2 text-gray-700 hover:text-orange-500"
+                  >
+                    講師管理
+                  </Link>
+                )}
                 <Link
                   href="/mypage"
                   className="block py-2 text-gray-700 hover:text-orange-500"
