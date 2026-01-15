@@ -67,8 +67,8 @@ class TicketController extends Controller
             default => 1,
         };
 
-        // 有効期限を設定（購入日から3ヶ月）
-        $expiresAt = now()->addMonths(3);
+        // 有効期限を設定（購入日から6ヶ月）
+        $expiresAt = now()->addMonths(6);
 
         $ticket = Ticket::create([
             'user_id' => $request->user()->id,
