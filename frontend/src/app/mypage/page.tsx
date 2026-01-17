@@ -131,18 +131,44 @@ export default function MyPage() {
                 {tickets.filter((t) => t.is_valid).length > 0 && (
                   <div className="border-t pt-4 mt-4">
                     <h3 className="text-sm font-medium text-gray-700 mb-2">チケット詳細</h3>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {tickets
                         .filter((t) => t.is_valid)
                         .map((ticket) => (
                           <div
                             key={ticket.id}
-                            className="flex justify-between text-sm"
+                            className="bg-gray-50 rounded-lg p-3"
                           >
-                            <span className="text-gray-600">{ticket.plan_label}</span>
-                            <span className="font-medium">
-                              残り {ticket.remaining_count} 回
-                            </span>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">{ticket.plan_label}</span>
+                              <span className="font-medium">
+                                残り {ticket.remaining_count} 回
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              有効期限: {new Date(ticket.expires_at).toLocaleDateString('ja-JP')}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {tickets.filter((t) => t.is_expired && t.remaining_count > 0).length > 0 && (
+                  <div className="border-t pt-4 mt-4">
+                    <h3 className="text-sm font-medium text-red-600 mb-2">期限切れチケット</h3>
+                    <div className="space-y-2">
+                      {tickets
+                        .filter((t) => t.is_expired && t.remaining_count > 0)
+                        .map((ticket) => (
+                          <div
+                            key={ticket.id}
+                            className="bg-red-50 rounded-lg p-3 text-sm"
+                          >
+                            <div className="flex justify-between text-red-700">
+                              <span>{ticket.plan_label}</span>
+                              <span>{ticket.remaining_count} 回分失効</span>
+                            </div>
                           </div>
                         ))}
                     </div>
