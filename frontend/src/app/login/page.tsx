@@ -34,30 +34,33 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            ログイン
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            または{' '}
-            <Link href="/register" className="font-medium text-orange-500 hover:text-orange-400">
-              新規会員登録
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-stone-50 to-emerald-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full">
+        <div className="bg-white rounded-2xl border border-stone-100 p-8">
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-block text-2xl font-bold text-stone-800 mb-2">
+              おうち<span className="text-emerald-700">シェフ</span>
             </Link>
-          </p>
-        </div>
+            <h1 className="text-xl font-bold text-stone-800">
+              ログイン
+            </h1>
+            <p className="mt-2 text-sm text-stone-600">
+              アカウントをお持ちでない方は{' '}
+              <Link href="/register" className="font-medium text-emerald-700 hover:text-emerald-800">
+                新規会員登録
+              </Link>
+            </p>
+          </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+                {error}
+              </div>
+            )}
 
-          <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email" className="sr-only">
+              <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-1">
                 メールアドレス
               </label>
               <input
@@ -66,14 +69,15 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                placeholder="メールアドレス"
+                className="appearance-none block w-full px-4 py-3 border border-stone-200 rounded-xl placeholder-stone-400 text-stone-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                placeholder="example@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+
             <div>
-              <label htmlFor="password" className="sr-only">
+              <label htmlFor="password" className="block text-sm font-medium text-stone-700 mb-1">
                 パスワード
               </label>
               <input
@@ -82,24 +86,22 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                className="appearance-none block w-full px-4 py-3 border border-stone-200 rounded-xl placeholder-stone-400 text-stone-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 placeholder="パスワード"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-          </div>
 
-          <div>
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl text-white bg-emerald-700 hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'ログイン中...' : 'ログイン'}
             </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

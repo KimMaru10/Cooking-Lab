@@ -98,19 +98,20 @@ export default function MyPage() {
 
   if (authLoading || (!user && !authLoading)) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-600 border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50">
       {/* Header */}
-      <section className="bg-orange-500 text-white py-12">
+      <section className="bg-gradient-to-br from-amber-50 via-stone-50 to-emerald-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl md:text-4xl font-bold">マイページ</h1>
-          <p className="mt-2 text-orange-100">{user?.name} さん</p>
+          <p className="text-emerald-700 font-medium mb-2">My Page</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-stone-800">マイページ</h1>
+          <p className="mt-2 text-stone-600">{user?.name} さん</p>
         </div>
       </section>
 
@@ -119,33 +120,33 @@ export default function MyPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Tickets Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">チケット残数</h2>
+              <div className="bg-white rounded-2xl border border-stone-100 p-6 sticky top-24">
+                <h2 className="text-xl font-bold text-stone-800 mb-4">チケット残数</h2>
                 <div className="text-center py-6">
-                  <div className="text-5xl font-bold text-orange-500">
+                  <div className="text-5xl font-bold text-emerald-700">
                     {totalRemainingTickets}
                   </div>
-                  <div className="text-gray-600 mt-2">回分</div>
+                  <div className="text-stone-600 mt-2">回分</div>
                 </div>
 
                 {tickets.filter((t) => t.is_valid).length > 0 && (
-                  <div className="border-t pt-4 mt-4">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">チケット詳細</h3>
+                  <div className="border-t border-stone-100 pt-4 mt-4">
+                    <h3 className="text-sm font-medium text-stone-700 mb-2">チケット詳細</h3>
                     <div className="space-y-3">
                       {tickets
                         .filter((t) => t.is_valid)
                         .map((ticket) => (
                           <div
                             key={ticket.id}
-                            className="bg-gray-50 rounded-lg p-3"
+                            className="bg-stone-50 rounded-xl p-3"
                           >
                             <div className="flex justify-between">
-                              <span className="text-gray-600">{ticket.plan_label}</span>
-                              <span className="font-medium">
+                              <span className="text-stone-600">{ticket.plan_label}</span>
+                              <span className="font-medium text-stone-800">
                                 残り {ticket.remaining_count} 回
                               </span>
                             </div>
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="text-xs text-stone-500 mt-1">
                               有効期限: {new Date(ticket.expires_at).toLocaleDateString('ja-JP')}
                             </div>
                           </div>
@@ -155,7 +156,7 @@ export default function MyPage() {
                 )}
 
                 {tickets.filter((t) => t.is_expired && t.remaining_count > 0).length > 0 && (
-                  <div className="border-t pt-4 mt-4">
+                  <div className="border-t border-stone-100 pt-4 mt-4">
                     <h3 className="text-sm font-medium text-red-600 mb-2">期限切れチケット</h3>
                     <div className="space-y-2">
                       {tickets
@@ -163,7 +164,7 @@ export default function MyPage() {
                         .map((ticket) => (
                           <div
                             key={ticket.id}
-                            className="bg-red-50 rounded-lg p-3 text-sm"
+                            className="bg-red-50 rounded-xl p-3 text-sm"
                           >
                             <div className="flex justify-between text-red-700">
                               <span>{ticket.plan_label}</span>
@@ -177,7 +178,7 @@ export default function MyPage() {
 
                 <Link
                   href="/tickets/purchase"
-                  className="mt-6 block w-full bg-orange-500 text-white text-center py-3 rounded-full font-medium hover:bg-orange-600 transition"
+                  className="mt-6 block w-full bg-emerald-700 text-white text-center py-3 rounded-xl font-medium hover:bg-emerald-800 transition"
                 >
                   チケットを購入
                 </Link>
@@ -188,28 +189,28 @@ export default function MyPage() {
             <div className="lg:col-span-2 space-y-8">
               {/* Viewed Lessons */}
               {viewedLessons.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-lg p-6">
-                  <h2 className="text-xl font-bold text-gray-800 mb-4">最近見た講座</h2>
+                <div className="bg-white rounded-2xl border border-stone-100 p-6">
+                  <h2 className="text-xl font-bold text-stone-800 mb-4">最近見た講座</h2>
                   <div className="space-y-3">
                     {viewedLessons.map((lesson) => (
                       <Link
                         key={lesson.id}
                         href={`/lessons/${lesson.id}`}
-                        className="block border border-gray-200 rounded-xl p-4 hover:border-orange-300 hover:bg-orange-50 transition"
+                        className="block border border-stone-200 rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50 transition"
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-medium text-gray-800">{lesson.title}</div>
+                            <div className="font-medium text-stone-800">{lesson.title}</div>
                             <div className="flex gap-2 mt-1">
-                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                              <span className="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">
                                 {lesson.category_label}
                               </span>
-                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                              <span className="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">
                                 {lesson.difficulty_label}
                               </span>
                             </div>
                           </div>
-                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>
                         </div>
@@ -220,20 +221,20 @@ export default function MyPage() {
               )}
 
               {/* Reservations */}
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">予約履歴</h2>
+              <div className="bg-white rounded-2xl border border-stone-100 p-6">
+                <h2 className="text-xl font-bold text-stone-800 mb-4">予約履歴</h2>
 
                 {isLoading ? (
                   <div className="text-center py-12">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
-                    <p className="mt-4 text-gray-600">読み込み中...</p>
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-600 border-t-transparent"></div>
+                    <p className="mt-4 text-stone-600">読み込み中...</p>
                   </div>
                 ) : reservations.length === 0 ? (
                   <div className="text-center py-12">
-                    <p className="text-gray-500">予約履歴がありません</p>
+                    <p className="text-stone-500">予約履歴がありません</p>
                     <Link
                       href="/lessons"
-                      className="mt-4 inline-block text-orange-500 hover:underline"
+                      className="mt-4 inline-block text-emerald-700 hover:underline"
                     >
                       レッスンを探す
                     </Link>
@@ -243,20 +244,20 @@ export default function MyPage() {
                     {reservations.map((reservation) => (
                       <div
                         key={reservation.id}
-                        className="border border-gray-200 rounded-xl p-4"
+                        className="border border-stone-200 rounded-xl p-4"
                       >
                         <div className="flex justify-between items-start">
                           <div>
                             {reservation.schedule?.lesson && (
                               <Link
                                 href={`/lessons/${reservation.schedule.lesson.id}`}
-                                className="text-lg font-bold text-gray-800 hover:text-orange-500"
+                                className="text-lg font-bold text-stone-800 hover:text-emerald-700"
                               >
                                 {reservation.schedule.lesson.title}
                               </Link>
                             )}
                             {reservation.schedule && (
-                              <div className="text-sm text-gray-600 mt-1">
+                              <div className="text-sm text-stone-600 mt-1">
                                 {formatDate(reservation.schedule.start_at)}{' '}
                                 {formatTime(reservation.schedule.start_at)} -{' '}
                                 {formatTime(reservation.schedule.end_at)}
@@ -266,12 +267,12 @@ export default function MyPage() {
                           <span
                             className={`px-3 py-1 rounded-full text-sm font-medium ${
                               reservation.status === 'reserved'
-                                ? 'bg-green-100 text-green-700'
+                                ? 'bg-emerald-100 text-emerald-800'
                                 : reservation.status === 'cancelled'
-                                ? 'bg-gray-100 text-gray-700'
+                                ? 'bg-stone-100 text-stone-700'
                                 : reservation.status === 'attended'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-red-100 text-red-700'
+                                ? 'bg-sky-100 text-sky-800'
+                                : 'bg-red-100 text-red-800'
                             }`}
                           >
                             {reservation.status_label}
@@ -284,12 +285,12 @@ export default function MyPage() {
                               <button
                                 onClick={() => handleCancelClick(reservation)}
                                 disabled={cancellingId === reservation.id}
-                                className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50"
+                                className="text-sm text-red-600 hover:text-red-800 disabled:opacity-50"
                               >
                                 予約をキャンセル
                               </button>
                             ) : (
-                              <span className="text-sm text-gray-400">
+                              <span className="text-sm text-stone-400">
                                 24時間前を過ぎたためキャンセル不可
                               </span>
                             )}
@@ -309,16 +310,16 @@ export default function MyPage() {
       {cancelModalReservation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
+            <h3 className="text-xl font-bold text-stone-800 mb-4">
               予約をキャンセルしますか？
             </h3>
 
             {cancelModalReservation.schedule?.lesson && (
-              <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                <div className="font-medium text-gray-800">
+              <div className="bg-stone-50 rounded-xl p-4 mb-4">
+                <div className="font-medium text-stone-800">
                   {cancelModalReservation.schedule.lesson.title}
                 </div>
-                <div className="text-sm text-gray-600 mt-1">
+                <div className="text-sm text-stone-600 mt-1">
                   {formatDate(cancelModalReservation.schedule.start_at)}{' '}
                   {formatTime(cancelModalReservation.schedule.start_at)} -{' '}
                   {formatTime(cancelModalReservation.schedule.end_at)}
@@ -326,12 +327,12 @@ export default function MyPage() {
               </div>
             )}
 
-            <div className="bg-green-50 rounded-xl p-4 mb-6">
+            <div className="bg-emerald-50 rounded-xl p-4 mb-6 border border-emerald-100">
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-green-700 font-medium">
+                <span className="text-emerald-800 font-medium">
                   チケット1回分が返却されます
                 </span>
               </div>
@@ -340,14 +341,14 @@ export default function MyPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setCancelModalReservation(null)}
-                className="flex-1 py-3 rounded-full border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition"
+                className="flex-1 py-3 rounded-xl border-2 border-stone-300 text-stone-700 font-medium hover:bg-stone-50 transition"
               >
                 戻る
               </button>
               <button
                 onClick={handleCancelConfirm}
                 disabled={cancellingId !== null}
-                className="flex-1 py-3 rounded-full bg-red-500 text-white font-medium hover:bg-red-600 transition disabled:opacity-50"
+                className="flex-1 py-3 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition disabled:opacity-50"
               >
                 {cancellingId !== null ? 'キャンセル中...' : 'キャンセルする'}
               </button>
