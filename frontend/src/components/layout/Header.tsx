@@ -24,15 +24,13 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white sticky top-0 z-50">
+    <header className="bg-white/95 backdrop-blur-sm sticky top-0 z-50 border-b border-stone-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-3xl">🍳</span>
-            <span className="text-2xl font-bold">
-              <span className="text-orange-500">Cooking</span>
-              <span className="text-green-600">Lab</span>
+          <Link href="/" className="flex items-center">
+            <span className="text-2xl font-bold text-stone-800">
+              おうち<span className="text-emerald-700">シェフ</span>
             </span>
           </Link>
 
@@ -40,31 +38,31 @@ export default function Header() {
           <nav className="hidden md:flex items-center space-x-8">
             <Link
               href="/lessons"
-              className="text-gray-700 hover:text-orange-500 font-medium transition"
+              className="text-stone-600 hover:text-emerald-700 font-medium transition"
             >
               レッスン
             </Link>
             <Link
               href="/recipes"
-              className="text-gray-700 hover:text-green-600 font-medium transition"
+              className="text-stone-600 hover:text-emerald-700 font-medium transition"
             >
               レシピ
             </Link>
             <Link
               href="/about"
-              className="text-gray-700 hover:text-orange-500 font-medium transition"
+              className="text-stone-600 hover:text-emerald-700 font-medium transition"
             >
-              Cooking Labとは
+              おうちシェフとは
             </Link>
 
             {isLoading ? (
-              <span className="text-gray-400">...</span>
+              <span className="text-stone-400">...</span>
             ) : user ? (
               <>
                 {user.role === 'staff' && (
                   <Link
                     href="/admin"
-                    className="text-gray-700 hover:text-orange-500 font-medium transition"
+                    className="text-stone-600 hover:text-emerald-700 font-medium transition"
                   >
                     管理画面
                   </Link>
@@ -72,20 +70,20 @@ export default function Header() {
                 {user.role === 'instructor' && (
                   <Link
                     href="/instructor"
-                    className="text-gray-700 hover:text-orange-500 font-medium transition"
+                    className="text-stone-600 hover:text-emerald-700 font-medium transition"
                   >
                     講師管理
                   </Link>
                 )}
                 <Link
                   href="/mypage"
-                  className="text-gray-700 hover:text-orange-500 font-medium transition"
+                  className="text-stone-600 hover:text-emerald-700 font-medium transition"
                 >
                   マイページ
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-gray-700 hover:text-orange-500 font-medium transition"
+                  className="text-stone-600 hover:text-emerald-700 font-medium transition"
                 >
                   ログアウト
                 </button>
@@ -94,13 +92,13 @@ export default function Header() {
               <>
                 <Link
                   href="/login"
-                  className="text-gray-700 hover:text-orange-500 font-medium transition"
+                  className="text-stone-600 hover:text-emerald-700 font-medium transition"
                 >
                   ログイン
                 </Link>
                 <Link
                   href="/register"
-                  className="bg-orange-500 text-white px-6 py-2 rounded-full hover:bg-orange-600 font-medium transition"
+                  className="bg-emerald-700 text-white px-6 py-2 rounded-xl hover:bg-emerald-800 font-medium transition"
                 >
                   無料登録
                 </Link>
@@ -140,34 +138,34 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <nav className="md:hidden pb-4 space-y-2">
+          <nav className="md:hidden pb-4 space-y-2 border-t border-stone-100 pt-4">
             <Link
               href="/lessons"
-              className="block py-2 text-gray-700 hover:text-orange-500"
+              className="block py-2 text-stone-600 hover:text-emerald-700"
             >
               レッスン
             </Link>
             <Link
               href="/recipes"
-              className="block py-2 text-gray-700 hover:text-green-600"
+              className="block py-2 text-stone-600 hover:text-emerald-700"
             >
               レシピ
             </Link>
             <Link
               href="/about"
-              className="block py-2 text-gray-700 hover:text-orange-500"
+              className="block py-2 text-stone-600 hover:text-emerald-700"
             >
-              Cooking Labとは
+              おうちシェフとは
             </Link>
 
             {isLoading ? (
-              <span className="block py-2 text-gray-400">...</span>
+              <span className="block py-2 text-stone-400">...</span>
             ) : user ? (
               <>
                 {user.role === 'staff' && (
                   <Link
                     href="/admin"
-                    className="block py-2 text-gray-700 hover:text-orange-500"
+                    className="block py-2 text-stone-600 hover:text-emerald-700"
                   >
                     管理画面
                   </Link>
@@ -175,20 +173,20 @@ export default function Header() {
                 {user.role === 'instructor' && (
                   <Link
                     href="/instructor"
-                    className="block py-2 text-gray-700 hover:text-orange-500"
+                    className="block py-2 text-stone-600 hover:text-emerald-700"
                   >
                     講師管理
                   </Link>
                 )}
                 <Link
                   href="/mypage"
-                  className="block py-2 text-gray-700 hover:text-orange-500"
+                  className="block py-2 text-stone-600 hover:text-emerald-700"
                 >
                   マイページ
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="block py-2 text-gray-700 hover:text-orange-500 text-left w-full"
+                  className="block py-2 text-stone-600 hover:text-emerald-700 text-left w-full"
                 >
                   ログアウト
                 </button>
@@ -197,13 +195,13 @@ export default function Header() {
               <>
                 <Link
                   href="/login"
-                  className="block py-2 text-gray-700 hover:text-orange-500"
+                  className="block py-2 text-stone-600 hover:text-emerald-700"
                 >
                   ログイン
                 </Link>
                 <Link
                   href="/register"
-                  className="block py-2 text-orange-500 font-medium"
+                  className="block py-2 text-emerald-700 font-medium"
                 >
                   無料登録
                 </Link>

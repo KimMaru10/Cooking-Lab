@@ -22,7 +22,6 @@ export default function LessonDetailPage() {
     }
   }, [params.id]);
 
-  // 閲覧履歴をストアに保存
   useEffect(() => {
     if (lesson) {
       addViewedLesson({
@@ -75,31 +74,40 @@ export default function LessonDetailPage() {
     });
   };
 
-  const getCategoryColor = (cat: string) => {
+  const getCategoryStyle = (cat: string) => {
     switch (cat) {
-      case 'japanese': return 'bg-red-500';
-      case 'western': return 'bg-yellow-500';
-      case 'chinese': return 'bg-orange-500';
-      case 'sweets': return 'bg-pink-500';
-      default: return 'bg-gray-500';
+      case 'japanese':
+        return { bg: 'bg-amber-100', text: 'text-amber-800', gradient: 'from-amber-50 to-stone-50' };
+      case 'western':
+        return { bg: 'bg-orange-100', text: 'text-orange-800', gradient: 'from-orange-50 to-stone-50' };
+      case 'chinese':
+        return { bg: 'bg-red-100', text: 'text-red-800', gradient: 'from-red-50 to-stone-50' };
+      case 'sweets':
+        return { bg: 'bg-pink-100', text: 'text-pink-800', gradient: 'from-pink-50 to-stone-50' };
+      default:
+        return { bg: 'bg-stone-100', text: 'text-stone-800', gradient: 'from-stone-100 to-stone-50' };
     }
   };
 
-  const getDifficultyColor = (diff: string) => {
+  const getDifficultyStyle = (diff: string) => {
     switch (diff) {
-      case 'beginner': return 'bg-green-500';
-      case 'intermediate': return 'bg-blue-500';
-      case 'advanced': return 'bg-purple-500';
-      default: return 'bg-gray-500';
+      case 'beginner':
+        return { bg: 'bg-emerald-100', text: 'text-emerald-800' };
+      case 'intermediate':
+        return { bg: 'bg-sky-100', text: 'text-sky-800' };
+      case 'advanced':
+        return { bg: 'bg-purple-100', text: 'text-purple-800' };
+      default:
+        return { bg: 'bg-stone-100', text: 'text-stone-800' };
     }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
-          <p className="mt-4 text-gray-600">読み込み中...</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-600 border-t-transparent"></div>
+          <p className="mt-4 text-stone-600">読み込み中...</p>
         </div>
       </div>
     );
@@ -107,10 +115,10 @@ export default function LessonDetailPage() {
 
   if (!lesson) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">レッスンが見つかりませんでした</p>
-          <Link href="/lessons" className="mt-4 inline-block text-orange-500 hover:underline">
+          <p className="text-stone-600">レッスンが見つかりませんでした</p>
+          <Link href="/lessons" className="mt-4 inline-block text-emerald-700 hover:underline">
             レッスン一覧に戻る
           </Link>
         </div>
@@ -118,26 +126,29 @@ export default function LessonDetailPage() {
     );
   }
 
+  const catStyle = getCategoryStyle(lesson.category);
+  const diffStyle = getDifficultyStyle(lesson.difficulty);
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50">
       {/* Header */}
-      <section className={`${getCategoryColor(lesson.category)} text-white py-12`}>
+      <section className={`bg-gradient-to-br ${catStyle.gradient} py-12`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link href="/lessons" className="inline-flex items-center text-white/80 hover:text-white mb-4">
+          <Link href="/lessons" className="inline-flex items-center text-stone-600 hover:text-emerald-700 mb-4 transition">
             <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             レッスン一覧に戻る
           </Link>
           <div className="flex gap-2 mb-4">
-            <span className="bg-white/20 text-white text-sm px-3 py-1 rounded-full">
+            <span className={`${catStyle.bg} ${catStyle.text} text-sm px-3 py-1 rounded-full font-medium`}>
               {lesson.category_label}
             </span>
-            <span className={`${getDifficultyColor(lesson.difficulty)} text-white text-sm px-3 py-1 rounded-full`}>
+            <span className={`${diffStyle.bg} ${diffStyle.text} text-sm px-3 py-1 rounded-full font-medium`}>
               {lesson.difficulty_label}
             </span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold">{lesson.title}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-stone-800">{lesson.title}</h1>
         </div>
       </section>
 
@@ -147,19 +158,19 @@ export default function LessonDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl shadow-lg p-8">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">レッスン内容</h2>
-                <p className="text-gray-600 whitespace-pre-wrap">{lesson.description}</p>
+              <div className="bg-white rounded-2xl border border-stone-100 p-8">
+                <h2 className="text-xl font-bold text-stone-800 mb-4">レッスン内容</h2>
+                <p className="text-stone-600 whitespace-pre-wrap leading-relaxed">{lesson.description}</p>
               </div>
             </div>
 
             {/* Sidebar - Schedules */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">開催スケジュール</h2>
+              <div className="bg-white rounded-2xl border border-stone-100 p-6 sticky top-24">
+                <h2 className="text-xl font-bold text-stone-800 mb-4">開催スケジュール</h2>
 
                 {!lesson.schedules || lesson.schedules.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
+                  <p className="text-stone-500 text-center py-8">
                     現在予定されているスケジュールはありません
                   </p>
                 ) : (
@@ -167,30 +178,30 @@ export default function LessonDetailPage() {
                     {lesson.schedules.map((schedule: Schedule) => (
                       <div
                         key={schedule.id}
-                        className="border border-gray-200 rounded-xl p-4"
+                        className="border border-stone-200 rounded-xl p-4"
                       >
-                        <div className="text-sm text-gray-500 mb-1">
+                        <div className="text-sm text-stone-500 mb-1">
                           {formatDate(schedule.start_at)}
                         </div>
-                        <div className="text-lg font-bold text-gray-800 mb-2">
+                        <div className="text-lg font-bold text-stone-800 mb-2">
                           {formatTime(schedule.start_at)} - {formatTime(schedule.end_at)}
                         </div>
                         {schedule.instructor && (
-                          <div className="text-sm text-gray-600 mb-2">
+                          <div className="text-sm text-stone-600 mb-2">
                             講師: {schedule.instructor.name}
                           </div>
                         )}
                         <div className="flex items-center justify-between">
-                          <span className={`text-sm ${schedule.is_full ? 'text-red-500' : 'text-green-600'}`}>
+                          <span className={`text-sm ${schedule.is_full ? 'text-red-600' : 'text-emerald-700'}`}>
                             残り {schedule.available_count} / {schedule.capacity} 席
                           </span>
                           <button
                             onClick={() => handleReserve(schedule.id)}
                             disabled={schedule.is_full}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
                               schedule.is_full
-                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                : 'bg-orange-500 text-white hover:bg-orange-600'
+                                ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
+                                : 'bg-emerald-700 text-white hover:bg-emerald-800'
                             }`}
                           >
                             {schedule.is_full ? '満席' : '予約する'}
@@ -202,13 +213,13 @@ export default function LessonDetailPage() {
                 )}
 
                 {!user && (
-                  <div className="mt-4 p-4 bg-orange-50 rounded-xl text-center">
-                    <p className="text-sm text-gray-600 mb-2">
+                  <div className="mt-4 p-4 bg-amber-50 rounded-xl text-center border border-amber-100">
+                    <p className="text-sm text-stone-600 mb-2">
                       予約するにはログインが必要です
                     </p>
                     <Link
                       href="/login"
-                      className="inline-block bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-orange-600 transition"
+                      className="inline-block bg-emerald-700 text-white px-6 py-2 rounded-xl text-sm font-medium hover:bg-emerald-800 transition"
                     >
                       ログイン
                     </Link>
