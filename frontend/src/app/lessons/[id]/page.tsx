@@ -48,9 +48,14 @@ export default function LessonDetailPage() {
     }
   };
 
+  const isSuspended = user?.suspended_until && new Date(user.suspended_until) > new Date();
+
   const handleReserve = (scheduleId: number) => {
     if (!user) {
       router.push('/login');
+      return;
+    }
+    if (isSuspended) {
       return;
     }
     router.push(`/reservations/confirm?schedule_id=${scheduleId}`);
@@ -197,14 +202,14 @@ export default function LessonDetailPage() {
                           </span>
                           <button
                             onClick={() => handleReserve(schedule.id)}
-                            disabled={schedule.is_full}
+                            disabled={schedule.is_full || !!isSuspended}
                             className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
-                              schedule.is_full
+                              schedule.is_full || isSuspended
                                 ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
                                 : 'bg-emerald-700 text-white hover:bg-emerald-800'
                             }`}
                           >
-                            {schedule.is_full ? '満席' : '予約する'}
+                            {schedule.is_full ? '満席' : isSuspended ? '予約停止中' : '予約する'}
                           </button>
                         </div>
                       </div>
@@ -223,6 +228,15 @@ export default function LessonDetailPage() {
                     >
                       ログイン
                     </Link>
+                  </div>
+                )}
+
+                {isSuspended && (
+                  <div className="mt-4 p-4 bg-red-50 rounded-xl border border-red-100">
+                    <p className="text-sm text-red-800 font-medium mb-1">予約が停止されています</p>
+                    <p className="text-xs text-red-600">
+                      {user?.suspended_until && new Date(user.suspended_until).toLocaleDateString('ja-JP')} まで新規予約ができません
+                    </p>
                   </div>
                 )}
               </div>

@@ -8,6 +8,8 @@ type User = {
   name: string;
   email: string;
   role: 'student' | 'instructor' | 'staff';
+  penalty_point?: number;
+  suspended_until?: string | null;
 };
 
 type AuthContextType = {

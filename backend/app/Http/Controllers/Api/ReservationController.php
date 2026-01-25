@@ -47,6 +47,14 @@ class ReservationController extends Controller
         $user = $request->user();
         $scheduleId = $request->schedule_id;
 
+        // ペナルティ停止チェック
+        if ($user->suspended_until && $user->suspended_until->isFuture()) {
+            return response()->json([
+                'message' => 'ペナルティにより予約が停止されています',
+                'suspended_until' => $user->suspended_until->format('Y-m-d'),
+            ], 403);
+        }
+
         // 重複予約チェック
         $existingReservation = Reservation::where('user_id', $user->id)
             ->where('schedule_id', $scheduleId)

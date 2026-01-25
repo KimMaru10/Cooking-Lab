@@ -14,6 +14,11 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->when($this->shouldShowEmail($request), $this->email),
             'role' => $this->role,
+            'penalty_point' => $this->when($this->shouldShowEmail($request), $this->penalty_point),
+            'suspended_until' => $this->when(
+                $this->shouldShowEmail($request) && $this->suspended_until,
+                $this->suspended_until?->format('Y-m-d')
+            ),
         ];
     }
 
