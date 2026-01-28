@@ -8,6 +8,10 @@ export type Schedule = {
   lesson_id: number;
   instructor_id: number;
   instructor?: Instructor;
+  lesson?: {
+    id: number;
+    title: string;
+  };
   start_at: string;
   end_at: string;
   capacity: number;
@@ -15,6 +19,7 @@ export type Schedule = {
   available_count: number;
   is_full: boolean;
   status: string;
+  status_label?: string;
   created_at: string;
 };
 
