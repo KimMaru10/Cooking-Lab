@@ -98,8 +98,8 @@ export default function AdminSchedulesPage() {
   const openEditModal = (schedule: Schedule) => {
     setEditingSchedule(schedule);
     setForm({
-      lesson_id: schedule.lesson?.id || 0,
-      instructor_id: schedule.instructor?.id || 0,
+      lesson_id: schedule.lesson_id,
+      instructor_id: schedule.instructor_id,
       start_at: schedule.start_at.slice(0, 16).replace(' ', 'T'),
       end_at: schedule.end_at.slice(0, 16).replace(' ', 'T'),
       capacity: schedule.capacity,

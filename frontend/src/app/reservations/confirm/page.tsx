@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/api';
@@ -19,7 +19,7 @@ type ScheduleWithLesson = Schedule & {
   };
 };
 
-export default function ReservationConfirmPage() {
+function ReservationConfirmContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const scheduleId = searchParams.get('schedule_id');
@@ -39,6 +39,7 @@ export default function ReservationConfirmPage() {
     if (user && scheduleId) {
       fetchData();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, scheduleId]);
 
   const fetchData = async () => {
@@ -241,5 +242,21 @@ export default function ReservationConfirmPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
+    </div>
+  );
+}
+
+export default function ReservationConfirmPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ReservationConfirmContent />
+    </Suspense>
   );
 }
