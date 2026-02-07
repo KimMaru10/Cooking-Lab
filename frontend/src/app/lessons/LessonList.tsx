@@ -61,21 +61,59 @@ type Props = {
   lessons: Lesson[];
 };
 
+const sorts = [
+  { value: 'newest', label: '新着順' },
+  { value: 'oldest', label: '古い順' },
+];
+
 export default function LessonList({ lessons }: Props) {
+  const [keyword, setKeyword] = useState('');
   const [category, setCategory] = useState('');
   const [difficulty, setDifficulty] = useState('');
+  const [sort, setSort] = useState('newest');
 
-  const filteredLessons = lessons.filter((lesson) => {
-    if (category && lesson.category !== category) return false;
-    if (difficulty && lesson.difficulty !== difficulty) return false;
-    return true;
-  });
+  const filteredLessons = lessons
+    .filter((lesson) => {
+      if (keyword) {
+        const lower = keyword.toLowerCase();
+        if (
+          !lesson.title.toLowerCase().includes(lower) &&
+          !lesson.description.toLowerCase().includes(lower)
+        ) return false;
+      }
+      if (category && lesson.category !== category) return false;
+      if (difficulty && lesson.difficulty !== difficulty) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sort === 'oldest') {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 
   return (
     <>
-      {/* Filters */}
+      {/* Search & Filters */}
       <section className="bg-white border-b border-stone-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          {/* Search Bar */}
+          <div className="mb-4">
+            <div className="relative">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                placeholder="レッスンを検索..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+              />
+            </div>
+          </div>
+
+          {/* Filters */}
           <div className="flex flex-wrap gap-4">
             <div>
               <label className="block text-sm font-medium text-stone-700 mb-1">
@@ -109,6 +147,22 @@ export default function LessonList({ lessons }: Props) {
                 ))}
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">
+                並び替え
+              </label>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="block w-40 rounded-xl border-stone-200 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+              >
+                {sorts.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       </section>
@@ -118,7 +172,9 @@ export default function LessonList({ lessons }: Props) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {filteredLessons.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-stone-600">レッスンが見つかりませんでした</p>
+              <p className="text-stone-600">
+                {keyword ? `「${keyword}」に一致するレッスンが見つかりませんでした` : 'レッスンが見つかりませんでした'}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
