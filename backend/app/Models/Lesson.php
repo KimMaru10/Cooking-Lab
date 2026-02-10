@@ -20,4 +20,9 @@ class Lesson extends Model
     {
         return $this->hasMany(Schedule::class);
     }
+
+    public function favoritedBy()
+    {
+        return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
+    }
 }

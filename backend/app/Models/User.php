@@ -78,4 +78,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Schedule::class, 'instructor_id');
     }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function favoriteLessons()
+    {
+        return $this->belongsToMany(Lesson::class, 'favorites')->withTimestamps();
+    }
 }

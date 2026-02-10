@@ -6,6 +6,7 @@ import Link from 'next/link';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Reservation, Ticket } from '@/types/reservation';
+import { Lesson } from '@/types/lesson';
 import { useViewedLessonsStore } from '@/stores/viewedLessonsStore';
 
 export default function MyPage() {
@@ -14,6 +15,7 @@ export default function MyPage() {
   const viewedLessons = useViewedLessonsStore((state) => state.viewedLessons);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [favorites, setFavorites] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [cancelModalReservation, setCancelModalReservation] = useState<Reservation | null>(null);
@@ -33,12 +35,14 @@ export default function MyPage() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [reservationsRes, ticketsRes] = await Promise.all([
+      const [reservationsRes, ticketsRes, favoritesRes] = await Promise.all([
         api.get('/reservations'),
         api.get('/tickets'),
+        api.get('/favorites'),
       ]);
       setReservations(reservationsRes.data.data);
       setTickets(ticketsRes.data.data);
+      setFavorites(favoritesRes.data.data);
     } catch (error) {
       console.error('データの取得に失敗しました', error);
     } finally {
@@ -238,6 +242,61 @@ export default function MyPage() {
                   </div>
                 </div>
               )}
+
+              {/* Favorites */}
+              <div className="bg-white rounded-2xl border border-stone-100 p-6">
+                <h2 className="text-xl font-bold text-stone-800 mb-4">
+                  <span className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-red-500 fill-red-500" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    お気に入り
+                  </span>
+                </h2>
+
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-600 border-t-transparent"></div>
+                  </div>
+                ) : favorites.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-stone-500">お気に入りのレッスンはありません</p>
+                    <Link
+                      href="/lessons"
+                      className="mt-4 inline-block text-emerald-700 hover:underline"
+                    >
+                      レッスンを探す
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {favorites.map((lesson) => (
+                      <Link
+                        key={lesson.id}
+                        href={`/lessons/${lesson.id}`}
+                        className="block border border-stone-200 rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50 transition"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-stone-800">{lesson.title}</div>
+                            <div className="flex gap-2 mt-1">
+                              <span className="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">
+                                {lesson.category_label}
+                              </span>
+                              <span className="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">
+                                {lesson.difficulty_label}
+                              </span>
+                            </div>
+                          </div>
+                          <svg className="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Reservations */}
               <div className="bg-white rounded-2xl border border-stone-100 p-6">

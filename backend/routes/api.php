@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\InstructorController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\RecipeController;
@@ -46,6 +47,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/', [ReservationController::class, 'index']);
         Route::post('/', [ReservationController::class, 'store']);
         Route::delete('/{reservation}', [ReservationController::class, 'destroy']);
+    });
+
+    // お気に入り
+    Route::prefix('favorites')->group(function () {
+        Route::get('/', [FavoriteController::class, 'index']);
+        Route::get('/check', [FavoriteController::class, 'check']);
+        Route::post('/lessons/{lesson}', [FavoriteController::class, 'toggle']);
     });
 
     // チケット
