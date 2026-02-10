@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Lesson, Schedule } from '@/types/lesson';
 import { useViewedLessonsStore } from '@/stores/viewedLessonsStore';
+import api from '@/lib/api';
 
 type Props = {
   lesson: Lesson;
@@ -34,7 +35,36 @@ export default function ScheduleSidebar({ lesson }: Props) {
   const { user } = useAuth();
   const addViewedLesson = useViewedLessonsStore((state) => state.addViewedLesson);
 
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+
   const isSuspended = user?.suspended_until && new Date(user.suspended_until) > new Date();
+
+  useEffect(() => {
+    if (user) {
+      api.get(`/favorites/check?lesson_ids=${lesson.id}`)
+        .then((res) => {
+          setIsFavorited(res.data.favorites.includes(lesson.id));
+        })
+        .catch(() => {});
+    }
+  }, [user, lesson.id]);
+
+  const handleToggleFavorite = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    setFavoriteLoading(true);
+    try {
+      const res = await api.post(`/favorites/lessons/${lesson.id}`);
+      setIsFavorited(res.data.is_favorited);
+    } catch {
+      // ignore
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
 
   useEffect(() => {
     addViewedLesson({
@@ -60,6 +90,30 @@ export default function ScheduleSidebar({ lesson }: Props) {
 
   return (
     <div className="bg-white rounded-2xl border border-stone-100 p-6 sticky top-24">
+      <button
+        onClick={handleToggleFavorite}
+        disabled={favoriteLoading}
+        className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm transition mb-6 border ${
+          isFavorited
+            ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
+            : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+        }`}
+      >
+        <svg
+          className={`w-5 h-5 ${isFavorited ? 'fill-red-500 text-red-500' : 'fill-none text-stone-400'}`}
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+          />
+        </svg>
+        {isFavorited ? 'お気に入り済み' : 'お気に入りに追加'}
+      </button>
+
       <h2 className="text-xl font-bold text-stone-800 mb-4">開催スケジュール</h2>
 
       {!lesson.schedules || lesson.schedules.length === 0 ? (
